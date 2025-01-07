@@ -1,5 +1,5 @@
 import express from "express";
-import { authRoute } from "./routes/v1/auth";
+import { router } from "./routes/v1";
 import { config } from "./config/config";
 import { userRoute } from "./routes/v1/user";
 import { spaceRoute } from "./routes/v1/space";
@@ -16,7 +16,7 @@ app.get("/healthy", (req, res) => {
 
 app.use(express.json());
 
-app.use("/api/v1", authRoute);
+app.use("/api/v1", router);
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/space", spaceRoute);
 app.use("/api/v1/admin", adminRoute);
