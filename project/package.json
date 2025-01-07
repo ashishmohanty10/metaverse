@@ -13,6 +13,10 @@
     "typescript": "5.5.4"
   },
   "packageManager": "pnpm@9.0.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "engines": {
     "node": ">=18"
   }
