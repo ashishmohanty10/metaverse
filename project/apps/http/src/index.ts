@@ -6,6 +6,7 @@ import { spaceRoute } from "./routes/v1/space";
 import { adminRoute } from "./routes/v1/admin";
 
 const app = express();
+app.use(express.json());
 const PORT = config.port || 3002;
 
 app.get("/healthy", (req, res) => {
