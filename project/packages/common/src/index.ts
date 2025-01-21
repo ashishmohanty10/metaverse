@@ -73,14 +73,9 @@ export const createMapSchema = z.object({
   ),
 });
 
-declare global {
-  namespace Express {
-    export interface Request {
-      role?: "Admin" | "User";
-      userId?: string;
-    }
-  }
-}
+export const querySchema = z.object({
+  id: z.string(),
+});
 
 export type signUpSchemaTypes = z.infer<typeof signUpSchema>;
 export type signInSchemaTypes = z.infer<typeof signInSchema>;
