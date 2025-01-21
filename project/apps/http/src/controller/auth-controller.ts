@@ -49,8 +49,13 @@ export async function signUpController(req: Request, res: Response) {
     const token = jwt.sign(
       { id: newUser.id, role: newUser.role },
       config.jwtSecret as string,
-      { expiresIn: "1h" }
+      { expiresIn: "7d" }
     );
+    res.cookie("accessToken", token, {
+      httpOnly: true,
+      secure: true,
+      maxAge: 604800000,
+    });
 
     res.status(201).json({
       message: "User created successfully",
@@ -106,8 +111,14 @@ export async function signInController(req: Request, res: Response) {
     const token = jwt.sign(
       { id: user.id, role: user.role },
       config.jwtSecret as string,
-      { expiresIn: "1h" }
+      { expiresIn: "7d" }
     );
+
+    res.cookie("accessToken", token, {
+      httpOnly: true,
+      secure: true,
+      maxAge: 604800000,
+    });
 
     res.status(200).json({
       success: true,
