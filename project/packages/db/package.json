@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "db:studio": "pnpx prisma studio",
+    "db:migrate": "pnpx prisma migrate dev",
+    "db:generate": "pnpx prisma generate",
+    "db:push": "pnpx prisma db push"
   },
   "exports": {
     "./client": "./src/index.ts"

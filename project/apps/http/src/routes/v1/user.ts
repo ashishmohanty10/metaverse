@@ -1,73 +1,128 @@
-import { NextFunction, Request, Response, Router } from "express";
+import { NextFunction, Response, Router } from "express";
+import { updateMetaDataSchema } from "@repo/common";
 import { AuthRequest } from "../../middleware/admin-middleware";
-import { querySchema, updateMetaDataSchema } from "@repo/common";
 import { prisma } from "@repo/db/client";
+import { userMiddleware } from "../../middleware/user-middleware";
 
 export const userRoute = Router();
 
 userRoute.post(
   "/metadata",
+  userMiddleware,
   async (req: AuthRequest, res: Response, next: NextFunction) => {
     const data = req.body;
+    const parsedData = updateMetaDataSchema.safeParse(data);
+
+    if (!parsedData.success) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid data",
+      });
+      return;
+    }
 
     try {
-      const parsedData = updateMetaDataSchema.safeParse(data);
-      if (!parsedData.success) {
+      const avatar = await prisma.avatar.findUnique({
+        where: {
+          id: parsedData.data.avatarId,
+        },
+      });
+
+      if (!avatar) {
         res.status(400).json({
-          message: "Invalid data",
+          success: false,
+          message: "Invalid avatar ID",
         });
-        next();
+        return;
       }
 
-      const user = await prisma.user.update({
+      const user = await prisma.user.findUnique({
+        where: {
+          id: req.user?.id,
+        },
+      });
+
+      if (!user) {
+        res.status(404).json({
+          success: false,
+          message: "User not found",
+        });
+        return;
+      }
+
+      await prisma.user.update({
         where: {
           id: req.user?.id,
         },
         data: {
-          avatarId: parsedData.data?.avatarId,
+          avatarId: parsedData.data.avatarId,
         },
       });
 
       res.status(200).json({
-        message: "User metadata updated",
+        success: true,
+        message: "Metadata updated successfully",
       });
     } catch (error) {
+      console.error("Error in updateUserMetadata:", error);
       res.status(500).json({
+        success: false,
         message: "Internal server error",
       });
-      console.log("Error in updateUserMetadata", error);
     }
   }
 );
 
 userRoute.get(
-  "metadata/bulk",
+  "/metadata/bulk",
   async (req: AuthRequest, res: Response, next: NextFunction) => {
-    const query = querySchema.safeParse(req.query);
-    if (!query.success) {
-      res.status(400).json({
-        message: "Invalid data",
-      });
-      next();
-    }
+    try {
+      const userIdString = (req.query.ids ?? "[]") as string;
+      let avatarIds: string[];
 
-    const userIds = query.data?.id.split(",");
+      try {
+        avatarIds = JSON.parse(userIdString);
+        if (!Array.isArray(avatarIds)) {
+          throw new Error("Invalid ids format");
+        }
+      } catch (error) {
+        res.status(400).json({
+          success: false,
+          message: "Invalid ids format. Expected JSON array of strings",
+        });
+        return;
+      }
 
-    const metadata = await prisma.user.findMany({
-      where: {
-        id: {
-          in: userIds,
+      const metadata = await prisma.avatar.findMany({
+        where: {
+          id: {
+            in: avatarIds,
+          },
         },
-      },
-      select: {
-        id: true,
-        avatar: true,
-      },
-    });
+        select: {
+          imageUrl: true,
+          id: true,
+          users: {
+            select: {
+              id: true,
+            },
+          },
+        },
+      });
 
-    res.status(200).json({
-      message: "User metadata updated",
-      data: metadata.map((x) => ({ id: x.id, avatarId: x.avatar?.imageUrl })),
-    });
+      res.status(200).json({
+        success: true,
+        avatars: metadata.map((x) => ({
+          avatarId: x.id,
+          userId: x.users[0]?.id,
+        })),
+      });
+    } catch (error) {
+      console.error("Error in metadata/bulk:", error);
+      res.status(500).json({
+        success: false,
+        message: "Internal server error",
+      });
+    }
   }
 );

@@ -10,6 +10,7 @@ export const signUpSchema = z.object({
     .string()
     .min(8, { message: "Must be of 8 or more characters" })
     .max(32, { message: "Must be less than 32 character" }),
+  role: z.string().optional(),
 });
 
 export const signInSchema = z.object({
@@ -24,12 +25,12 @@ export const signInSchema = z.object({
 });
 
 export const updateMetaDataSchema = z.object({
-  avatarId: z.string().min(1),
+  avatarId: z.string(),
 });
 
 export const createSpaceSchema = z.object({
   name: z.string().min(1),
-  dimension: z.string().regex(/^[0-9]{1,4}x[0-9]{1,4}$/),
+  dimensions: z.string().regex(/^[0-9]{1,4}x[0-9]{1,4}$/),
   mapId: z.string().optional(),
 });
 
@@ -48,10 +49,10 @@ export const createElementSchema = z.object({
   imageUrl: z.string(),
   width: z.number(),
   height: z.number(),
-  static: z.number(),
+  static: z.boolean(),
 });
 
-export const updateAnElement = z.object({
+export const updateAnElementSchema = z.object({
   imageUrl: z.string(),
 });
 
@@ -84,6 +85,6 @@ export type createSpaceSchemaTypes = z.infer<typeof createSpaceSchema>;
 export type deleteElementSchemaTypes = z.infer<typeof deleteElementSchema>;
 export type addElementSchemaTypes = z.infer<typeof addElementSchema>;
 export type createElementSchemaTypes = z.infer<typeof createElementSchema>;
-export type updateAnElementTypes = z.infer<typeof updateAnElement>;
+export type updateAnElementTypes = z.infer<typeof updateAnElementSchema>;
 export type createAnAvatarSchemaTypes = z.infer<typeof createAnAvatarSchema>;
 export type createMapSchemaTypes = z.infer<typeof createMapSchema>;

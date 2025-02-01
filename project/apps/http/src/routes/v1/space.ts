@@ -7,13 +7,14 @@ import {
   getAllSpace,
   getBySpaceId,
 } from "../../controller/space-controller";
+import { userMiddleware } from "../../middleware/user-middleware";
 
 export const spaceRoute = Router();
 
-spaceRoute.post("/", createSpace);
-spaceRoute.delete("/:spaceId", deleteSpaceById);
+spaceRoute.post("/", userMiddleware, createSpace);
+spaceRoute.delete("/:id", userMiddleware, deleteSpaceById);
 spaceRoute.get("/all", getAllSpace);
 
 spaceRoute.get("/:spaceId", getBySpaceId);
-spaceRoute.post("/element", addElement);
-spaceRoute.delete("/element", deleteElement);
+spaceRoute.post("/element", userMiddleware, addElement);
+spaceRoute.delete("/element/:id", userMiddleware, deleteElement);

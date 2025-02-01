@@ -8,28 +8,34 @@ export function userMiddleware(
   res: Response,
   next: NextFunction
 ) {
-  try {
-    const token = req.cookies.accessToken;
-    if (!token) {
-      res.status(401).json({
-        message: "Unauthorized",
-      });
-      return;
-    }
+  const token = req.cookies.accessToken;
 
-    const decodeToken = jwt.verify(token, config.jwtSecret as string) as {
+  if (!token) {
+    res.status(401).json({
+      message: "Unauthorized",
+    });
+    return;
+  }
+
+  try {
+    const decodedToken = jwt.verify(token, config.jwtSecret as string) as {
       id: string;
       role: string;
     };
 
-    if (decodeToken?.role !== "user" || decodeToken.id !== req.user?.id) {
+    if (decodedToken.role !== "USER") {
       res.status(401).json({
-        message: "Unauthorized",
+        message: "Unauthorized: Invalid role",
       });
       return;
     }
+
+    req.user = { id: decodedToken.id, role: decodedToken.role };
+
     next();
   } catch (error) {
-    console.log("error in user middleware", error);
+    res.status(401).json({
+      message: "Unauthorized: Invalid token",
+    });
   }
 }
